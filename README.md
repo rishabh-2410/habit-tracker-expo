@@ -1,56 +1,194 @@
-# Welcome to your Expo app 👋
+# Habit Expo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile habit-tracking app built with **React Native** and **Expo**. Track daily habits, view streaks, and visualise your progress with a GitHub-style activity chart.
 
-## Get started
+> *Track your habits, transform your life.*
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+| Layer | Technology |
+|---|---|
+| Framework | React Native 0.83 + Expo 55 |
+| Routing | Expo Router (file-based) |
+| Styling | NativeWind (Tailwind CSS) + StyleSheet |
+| Server State | TanStack React Query |
+| Client State | Zustand |
+| Forms | React Hook Form + Zod |
+| HTTP | Axios |
+| Auth Storage | Expo Secure Store |
+| Charts | react-native-chart-kit |
+| Animations | React Native Reanimated |
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Project Structure
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+ ├── api/                   # Axios client & endpoint functions
+ │   ├── client.api.ts      #   Base instance + auth interceptor
+ │   ├── auth.api.ts        #   Login / register
+ │   └── habits.api.ts      #   CRUD habits, stats, history, mark-done
+ │
+ ├── app/                   # Expo Router file-based routes
+ │   ├── _layout.tsx        #   Root Stack (ThemeProvider + QueryProvider)
+ │   ├── index.tsx          #   Entry: token check -> redirect
+ │   ├── (auth)/            #   Auth group (Stack)
+ │   │   ├── login.tsx
+ │   │   ├── register.tsx
+ │   │   └── forgot-passwd.tsx
+ │   ├── habits/            #   Main app (Tab navigator)
+ │   │   ├── index.tsx      #     Home: habit list
+ │   │   └── profile.tsx    #     Profile + logout
+ │   └── habit/
+ │       └── [id].tsx       #   Habit detail: stats + activity chart
+ │
+ ├── components/            # Reusable UI components
+ │   ├── habit-list.tsx
+ │   ├── habit-item.tsx
+ │   ├── habit-activity-chart.tsx
+ │   ├── stat-card.tsx
+ │   ├── login-form.tsx
+ │   ├── register-form.tsx
+ │   └── ...
+ │
+ ├── hooks/                 # React Query hooks
+ │   └── user-habits.ts     #   useHabits, useHabitStats, useHabitHistory,
+ │                           #   useMarkHabitDone
+ │
+ ├── interfaces/            # TypeScript types
+ │   ├── habit.ts
+ │   └── habitStats.ts
+ │
+ ├── providers/
+ │   └── QueryProvider.tsx  # TanStack React Query context
+ │
+ ├── storage/
+ │   └── tokenStorage.ts    # Expo Secure Store helpers (save/get/remove)
+ │
+ └── store/
+     └── auth.store.ts      # Zustand auth state (user, token)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## Architecture
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### High-Level Overview
 
-## Learn more
+```
+┌──────────────────────────────────────────────────────┐
+│                    Expo Router                        │
+│              (file-based navigation)                  │
+├───────────┬────────────────┬─────────────────────────┤
+│  (auth)   │    habits      │      habit/[id]          │
+│  Login    │  Home   Prof.  │  Stats + Activity Chart  │
+├───────────┴────────────────┴─────────────────────────┤
+│                   Components                          │
+│  LoginForm  HabitList  HabitItem  StatCard            │
+│                HabitActivityChart                      │
+├──────────────────────────────────────────────────────┤
+│               Hooks (React Query)                     │
+│  useHabits  useHabitStats  useHabitHistory             │
+│                useMarkHabitDone                        │
+├────────────────────────┬─────────────────────────────┤
+│    Zustand Store       │       API Layer (Axios)      │
+│    (auth state)        │  client.api + interceptor    │
+├────────────────────────┼─────────────────────────────┤
+│   Expo Secure Store    │      Backend (REST API)      │
+│   (JWT persistence)    │     localhost:8080            │
+└────────────────────────┴─────────────────────────────┘
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Auth Flow
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+App Start
+    │
+    ▼
+┌───────────────┐    No token    ┌───────────────┐
+│   index.tsx   │ ─────────────► │   /login       │
+│  Check token  │                │  (auth group)  │
+└───────┬───────┘                └───────┬────────┘
+        │ Token found                    │ Submit credentials
+        ▼                                ▼
+┌───────────────┐                ┌───────────────┐
+│   /habits     │ ◄───────────── │ POST /login   │
+│   (Home)      │  Save token    │ -> JWT token  │
+└───────────────┘  + redirect    └───────────────┘
+```
 
-## Join the community
+**Token lifecycle:**
+1. On login, JWT saved to `expo-secure-store` (encrypted on device)
+2. Zustand holds the token in-memory for the session
+3. Axios interceptor auto-attaches `Bearer <token>` to every request
+4. On logout, token removed from secure store, user redirected to login
 
-Join our community of developers creating universal apps.
+### Data Flow
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+  Screen              Hook                  API              Backend
+    │                   │                    │                   │
+    │── useHabits() ──►│── queryFn() ─────►│── GET /habits ──►│
+    │                   │                    │                   │
+    │◄── Habit[] ──────│◄── res.data ──────│◄── JSON ─────────│
+    │                   │                    │                   │
+    │── markDone() ───►│── mutationFn() ──►│── POST /mark ───►│
+    │                   │                    │                   │
+    │  invalidate ◄────│── onSuccess ──────│◄── 200 / 409 ───│
+    │  queries          │                    │                   │
+```
+
+React Query manages caching and refetching. After a successful mutation, relevant query keys (`habit`, `habitHistory`) are invalidated so the UI refreshes automatically.
+
+---
+
+## API Endpoints
+
+The app communicates with a REST backend at `http://localhost:8080`:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/api/v1/login` | Login, returns `{ token }` |
+| `POST` | `/auth/api/v1/register` | Register new user |
+| `GET` | `/api/v1/user/habits` | List all user habits |
+| `POST` | `/api/v1/user/habits` | Create a new habit |
+| `GET` | `/api/v1/user/habit/:id/stats` | Habit statistics |
+| `GET` | `/api/v1/user/habit/:id/history` | Completed dates array |
+| `POST` | `/api/v1/user/habit/:id/mark-done` | Mark habit done for today (409 if already done) |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- iOS Simulator or Android Emulator (or Expo Go on a physical device)
+- Backend server running on `localhost:8080`
+
+### Install and Run
+
+```bash
+# Install dependencies
+npm install
+
+# Start the Expo dev server
+npx expo start
+
+# Or target a specific platform
+npx expo start --ios
+npx expo start --android
+```
+
+---
+
+## Key Design Decisions
+
+- **Expo Secure Store** for JWT storage -- encrypted at rest, not plain AsyncStorage
+- **React Query** for server state -- automatic caching, background refetch, and mutation invalidation keep the UI in sync without manual state management
+- **Zustand** for auth only -- minimal footprint; all server data lives in React Query
+- **File-based routing** via Expo Router -- route groups `(auth)` and `habits` cleanly separate public vs authenticated screens
+- **react-native-chart-kit** ContributionGraph -- GitHub-style activity heatmap out of the box
