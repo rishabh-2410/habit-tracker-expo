@@ -156,7 +156,7 @@ App Start
      │ invalidateQueries │                     │                   │
 ```
 
-React Query manages caching and refetching. After a successful mutation, relevant query keys (`habit`, `habitHistory`) are invalidated so the UI refreshes automatically.
+React Query manages caching and refetching. After a successful mutation, relevant query keys are invalidated so the UI refreshes automatically.
 
 ---
 
