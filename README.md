@@ -1,25 +1,25 @@
 # Habit Expo
 
-A mobile habit-tracking app built with **React Native** and **Expo**. Track daily habits, view streaks, and visualise your progress with a GitHub-style activity chart.
+A mobile habit-tracking app built with **React Native** and **Expo**. Track daily habits, view streaks, and visualise your daily progress.
 
-> *Track your habits, transform your life.*
+> _Track your habits, transform your life._
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React Native 0.83 + Expo 55 |
-| Routing | Expo Router (file-based) |
-| Styling | NativeWind (Tailwind CSS) + StyleSheet |
-| Server State | TanStack React Query |
-| Client State | Zustand |
-| Forms | React Hook Form + Zod |
-| HTTP | Axios |
-| Auth Storage | Expo Secure Store |
-| Charts | react-native-chart-kit |
-| Animations | React Native Reanimated |
+| Layer        | Technology                             |
+| ------------ | -------------------------------------- |
+| Framework    | React Native 0.83 + Expo 55            |
+| Routing      | Expo Router (file-based)               |
+| Styling      | NativeWind (Tailwind CSS) + StyleSheet |
+| Server State | TanStack React Query                   |
+| Client State | Zustand                                |
+| Forms        | React Hook Form + Zod                  |
+| HTTP         | Axios                                  |
+| Auth Storage | Expo Secure Store                      |
+| Charts       | react-native-chart-kit                 |
+| Animations   | React Native Reanimated                |
 
 ---
 
@@ -121,43 +121,42 @@ App Start
 ```
 
 **Token lifecycle:**
-1. On login, JWT saved to `expo-secure-store` (encrypted on device)
+
+1. On login, JWT is saved to `expo-secure-store` (encrypted on device)
 2. Zustand holds the token in-memory for the session
 3. Axios interceptor auto-attaches `Bearer <token>` to every request
-4. On logout, token removed from secure store, user redirected to login
+4. On logout, token is removed from secure store, user redirected to login
 
-### Data Flow
+### 🔄 Data Flow
 
 ```
-  Screen              Hook                  API              Backend
-    │                   │                    │                   │
-    │── useHabits() ──►│── queryFn() ─────►│── GET /habits ──►│
-    │                   │                    │                   │
-    │◄── Habit[] ──────│◄── res.data ──────│◄── JSON ─────────│
-    │                   │                    │                   │
-    │── markDone() ───►│── mutationFn() ──►│── POST /mark ───►│
-    │                   │                    │                   │
-    │  invalidate ◄────│── onSuccess ──────│◄── 200 / 409 ───│
-    │  queries          │                    │                   │
+┌──────────┐      ┌──────────────┐      ┌──────────────┐      ┌───────────┐
+│  Screen  │      │     Hook     │      │      API     │      │  Backend  │
+└────┬─────┘      └──────┬───────┘      └──────┬───────┘      └────┬──────┘
+     │                   │                     │                   │
+     │ useHabits()       │                     │                   │
+     ├──────────────────►│ queryFn()           │                   │
+     │                   ├────────────────────►│ GET /habits       │
+     │                   │                     ├──────────────────►│
+     │                   │                     │                   │
+     │                   │                     │      JSON         │
+     │                   │                     │◄──────────────────┤
+     │                   │◄────────────────────┤                   │
+     │◄──────────────────┤ Habit[]             │                   │
+     │                   │                     │                   │
+     │ markDone()        │                     │                   │
+     ├──────────────────►│ mutationFn()        │                   │
+     │                   ├────────────────────►│ POST /mark        │
+     │                   │                     ├──────────────────►│
+     │                   │                     │                   │
+     │                   │                     │   200 / 409       │
+     │                   │                     │◄──────────────────┤
+     │                   │◄────────────────────┤                   │
+     │◄──────────────────┤ onSuccess()         │                   │
+     │ invalidateQueries │                     │                   │
 ```
 
 React Query manages caching and refetching. After a successful mutation, relevant query keys (`habit`, `habitHistory`) are invalidated so the UI refreshes automatically.
-
----
-
-## API Endpoints
-
-The app communicates with a REST backend at `http://localhost:8080`:
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/auth/api/v1/login` | Login, returns `{ token }` |
-| `POST` | `/auth/api/v1/register` | Register new user |
-| `GET` | `/api/v1/user/habits` | List all user habits |
-| `POST` | `/api/v1/user/habits` | Create a new habit |
-| `GET` | `/api/v1/user/habit/:id/stats` | Habit statistics |
-| `GET` | `/api/v1/user/habit/:id/history` | Completed dates array |
-| `POST` | `/api/v1/user/habit/:id/mark-done` | Mark habit done for today (409 if already done) |
 
 ---
 
