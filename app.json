@@ -8,7 +8,8 @@
     "scheme": "habitexpo",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.niko-2901.habitexpo"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,11 +18,12 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.niko_2901.habitexpo"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
@@ -34,7 +36,8 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
