@@ -127,7 +127,7 @@ App Start
 3. Axios interceptor auto-attaches `Bearer <token>` to every request
 4. On logout, token is removed from secure store, user redirected to login
 
-### 🔄 Data Flow
+### Data Flow
 
 ```
 ┌──────────┐      ┌──────────────┐      ┌──────────────┐      ┌───────────┐
