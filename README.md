@@ -80,25 +80,25 @@ src/
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                    Expo Router                        │
-│              (file-based navigation)                  │
+│                    Expo Router                       │
+│              (file-based navigation)                 │
 ├───────────┬────────────────┬─────────────────────────┤
-│  (auth)   │    habits      │      habit/[id]          │
-│  Login    │  Home   Prof.  │  Stats + Activity Chart  │
+│  (auth)   │    habits      │      habit/[id]         │
+│  Login    │  Home   Prof.  │  Stats + Activity Chart │
 ├───────────┴────────────────┴─────────────────────────┤
-│                   Components                          │
-│  LoginForm  HabitList  HabitItem  StatCard            │
-│                HabitActivityChart                      │
+│                   Components                         │
+│  LoginForm  HabitList  HabitItem  StatCard           │
+│                HabitActivityChart                    │
 ├──────────────────────────────────────────────────────┤
-│               Hooks (React Query)                     │
-│  useHabits  useHabitStats  useHabitHistory             │
-│                useMarkHabitDone                        │
+│               Hooks (React Query)                    │
+│  useHabits  useHabitStats  useHabitHistory           │
+│                useMarkHabitDone                      │
 ├────────────────────────┬─────────────────────────────┤
-│    Zustand Store       │       API Layer (Axios)      │
-│    (auth state)        │  client.api + interceptor    │
+│    Zustand Store       │       API Layer (Axios)     │
+│    (auth state)        │  client.api + interceptor   │
 ├────────────────────────┼─────────────────────────────┤
-│   Expo Secure Store    │      Backend (REST API)      │
-│   (JWT persistence)    │     localhost:8080            │
+│   Expo Secure Store    │      Backend (REST API)     │
+│   (JWT persistence)    │     localhost:8080          │
 └────────────────────────┴─────────────────────────────┘
 ```
 
@@ -109,9 +109,9 @@ App Start
     │
     ▼
 ┌───────────────┐    No token    ┌───────────────┐
-│   index.tsx   │ ─────────────► │   /login       │
-│  Check token  │                │  (auth group)  │
-└───────┬───────┘                └───────┬────────┘
+│   index.tsx   │ ─────────────► │   /login      │
+│  Check token  │                │  (auth group) │
+└───────┬───────┘                └───────┬───────┘
         │ Token found                    │ Submit credentials
         ▼                                ▼
 ┌───────────────┐                ┌───────────────┐
